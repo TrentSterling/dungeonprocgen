@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cellular Automata - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            image-rendering: pixelated;
+            max-width: 100%;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Cellular Automata</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Cellular Automata (often inspired by Conway's Game of Life) works by applying local rules to every tile based on its neighbors. For caves, we usually start with random noise and then "smooth" it over several iterations.</p>
+            <p><strong>Rule:</strong> If a tile has more than 4 wall neighbors, it becomes a wall. Otherwise, it becomes a floor.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset Noise</button>
+                <button id="stepBtn" class="button">Iterate (Smooth)</button>
+                <span>Iteration: <span id="iterCount">0</span></span>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+// Counting neighbors
+let count = 0;
+for(let i = -1; i <= 1; i++) {
+    for(let j = -1; j <= 1; j++) {
+        if(grid[x+i][y+j] === WALL) count++;
+    }
+}
+// Smoothing rule
+newGrid[x][y] = (count > 4) ? WALL : FLOOR;
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
