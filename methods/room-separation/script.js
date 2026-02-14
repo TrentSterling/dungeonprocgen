@@ -13,8 +13,7 @@ const MAIN_ROOM_THRESHOLD = 1.2;
 let rooms = [];
 let currentStep = 'SPAWN';
 let mstEdges = [];
-let allEdges = [];
-let triEdges = []; // For Delaunay
+let triEdges = []; 
 let separating = false;
 
 const anim = new Animator();
@@ -33,7 +32,6 @@ class Room {
         const radius = Math.random() * 60;
         this.w = Math.floor(Math.random() * 30 + 15);
         this.h = Math.floor(Math.random() * 30 + 15);
-        // Ensure rooms align to a 10px grid roughly
         this.w = Math.round(this.w / 10) * 10;
         this.h = Math.round(this.h / 10) * 10;
         
@@ -48,7 +46,6 @@ class Room {
     get centerY() { return this.y + this.h / 2; }
 
     intersects(other) {
-        // Add a small 1px buffer to ensure they don't touch
         return !(this.x >= other.x + other.w + 2 ||
                  this.x + this.w + 2 <= other.x ||
                  this.y >= other.y + other.h + 2 ||
@@ -79,7 +76,6 @@ class Room {
 function init() {
     rooms = [];
     mstEdges = [];
-    allEdges = [];
     triEdges = [];
     separating = false;
     currentStep = 'SPAWN';
@@ -103,9 +99,9 @@ function updateUI() {
         'SPAWN': { label: 'Step 1: Spawning', desc: 'Rooms are scattered in a tight bunch.' },
         'SEPARATE': { label: 'Step 2: Separation', desc: 'Pushing rooms apart using steering behaviors.' },
         'SELECT': { label: 'Step 3: Main Rooms', desc: 'Large rooms are selected; others become potential corridor paths.' },
-        'TRIANGULATE': { label: 'Step 4: Triangulation', desc: 'Connecting main rooms to form a Delaunay graph.' },
-        'MST': { label: 'Step 5: Spanning Tree', desc: 'Finding the most efficient paths and adding back some flavor.' },
-        'CORRIDORS': { label: 'Step 6: Corridors', desc: 'Finalizing the dungeon with L-shaped hallways.' }
+        'TRIANGULATE': { label: 'Step 4: Triangulation', desc: 'Generating all possible connections between main rooms.' },
+        'MST': { label: 'Step 5: Spanning Tree', desc: 'Trimming the graph to a Minimum Spanning Tree (MST).' },
+        'CORRIDORS': { label: 'Step 6: Corridors', desc: 'Finalizing the layout with L-shaped hallways.' }
     };
     if(steps[currentStep]) {
         stepLabel.textContent = steps[currentStep].label;
@@ -203,11 +199,11 @@ function selectMain() {
     rooms.forEach((r, i) => {
         if (r.w > avgW * MAIN_ROOM_THRESHOLD && r.h > avgH * MAIN_ROOM_THRESHOLD) {
             r.isMain = true;
-            r.color = '#eee';
+            r.color = '#fff';
             r.borderColor = '#4a90e2';
         } else {
-            anim.add(500, (val) => {
-                r.opacity = 1.0 - (val * 0.7);
+            anim.add(800, (val) => {
+                r.opacity = 1.0 - (val * 0.8);
             }, Easing.easeOutQuad);
         }
     });
@@ -219,29 +215,22 @@ function triangulate() {
     const mainRooms = rooms.filter(r => r.isMain);
     triEdges = [];
     
-    // Using a simplified proximity graph for Delaunay visualization
     for(let i=0; i<mainRooms.length; i++) {
-        let dists = [];
-        for(let j=0; j<mainRooms.length; j++) {
-            if(i === j) continue;
-            const d = Math.sqrt(Math.pow(mainRooms[i].centerX - mainRooms[j].centerX, 2) + Math.pow(mainRooms[i].centerY - mainRooms[j].centerY, 2));
-            dists.push({index: j, d});
-        }
-        dists.sort((a,b) => a.d - b.d);
-        // Take 3 closest neighbors to approximate triangulation links
-        dists.slice(0, 3).forEach(target => {
-            const edge = { r1: mainRooms[i], r2: mainRooms[target.index], progress: 0 };
-            // Avoid duplicates
-            if(!triEdges.find(e => (e.r1 === edge.r1 && e.r2 === edge.r2) || (e.r1 === edge.r2 && e.r2 === edge.r1))) {
-                triEdges.push(edge);
+        for(let j=i+1; j<mainRooms.length; j++) {
+            const r1 = mainRooms[i];
+            const r2 = mainRooms[j];
+            const d = Math.sqrt(Math.pow(r1.centerX - r2.centerX, 2) + Math.pow(r1.centerY - r2.centerY, 2));
+            // Only add edges below a certain length to simulate a graph that isn't fully connected but plausible
+            if (d < 250) {
+                triEdges.push({ r1, r2, progress: 0 });
             }
-        });
+        }
     }
 
     triEdges.forEach((e, i) => {
         setTimeout(() => {
-            anim.add(400, (v) => e.progress = v, Easing.easeOutQuad);
-        }, i * 20);
+            anim.add(500, (v) => e.progress = v, Easing.easeOutQuad);
+        }, i * 10);
     });
 }
 
@@ -251,56 +240,48 @@ function calculateMST() {
     const mainRooms = rooms.filter(r => r.isMain);
     if (mainRooms.length === 0) return;
 
-    const nodes = mainRooms.map((r, i) => i);
-    const edges = [...triEdges];
     mstEdges = [];
-    const visited = new Set([0]);
+    const visited = new Set([mainRooms[0]]);
+    const unvisited = new Set(mainRooms.slice(1));
 
-    while (visited.size < mainRooms.length) {
+    while (unvisited.size > 0) {
         let bestEdge = null;
         let minDist = Infinity;
         
-        edges.forEach(e => {
-            const u = mainRooms.indexOf(e.r1);
-            const v = mainRooms.indexOf(e.r2);
-            const hasU = visited.has(u);
-            const hasV = visited.has(v);
-            if ((hasU && !hasV) || (!hasU && hasV)) {
-                const d = Math.sqrt(Math.pow(e.r1.centerX - e.r2.centerX, 2) + Math.pow(e.r1.centerY - e.r2.centerY, 2));
+        for (let r1 of visited) {
+            for (let r2 of unvisited) {
+                const d = Math.sqrt(Math.pow(r1.centerX - r2.centerX, 2) + Math.pow(r1.centerY - r2.centerY, 2));
                 if (d < minDist) {
                     minDist = d;
-                    bestEdge = e;
+                    bestEdge = { r1, r2 };
                 }
             }
-        });
+        }
 
         if (bestEdge) {
-            mstEdges.push({ ...bestEdge, progress: 0 });
-            visited.add(mainRooms.indexOf(bestEdge.r1));
-            visited.add(mainRooms.indexOf(bestEdge.r2));
+            const edge = { ...bestEdge, progress: 0 };
+            mstEdges.push(edge);
+            visited.add(bestEdge.r2);
+            unvisited.delete(bestEdge.r2);
+            
+            anim.add(600, (v) => edge.progress = v, Easing.easeInOutQuad);
         } else break;
     }
 
-    // Add back 15% of other triangulation edges for loops
+    // Add back 15% of other triEdges for loops
     triEdges.forEach(e => {
-        const isAlreadyIn = mstEdges.find(me => (me.r1 === e.r1 && me.r2 === e.r2) || (me.r1 === e.r2 && me.r2 === e.r1));
-        if(!isAlreadyIn && Math.random() < 0.15) {
-            mstEdges.push({ ...e, progress: 0 });
+        const alreadyIn = mstEdges.find(me => (me.r1 === e.r1 && me.r2 === e.r2) || (me.r1 === e.r2 && me.r2 === e.r1));
+        if(!alreadyIn && Math.random() < 0.1) {
+            const loopEdge = { ...e, progress: 0 };
+            mstEdges.push(loopEdge);
+            anim.add(600, (v) => loopEdge.progress = v, Easing.easeInOutQuad);
         }
-    });
-
-    mstEdges.forEach((e, i) => {
-        setTimeout(() => {
-            anim.add(500, (v) => e.progress = v, Easing.easeInOutQuad);
-        }, i * 100);
     });
 }
 
 function makeCorridors() {
     currentStep = 'CORRIDORS';
     updateUI();
-    // Rooms that were "culled" can now be used as floor if a corridor passes through them
-    // For visualization, we just draw the L-shapes
 }
 
 function draw() {
@@ -314,32 +295,38 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(WIDTH, i); ctx.stroke();
     }
 
-    // Step-specific drawing
-    if (currentStep === 'TRIANGULATE') {
-        ctx.strokeStyle = 'rgba(74, 144, 226, 0.3)';
+    // 1. Draw ALL possible connections (faintly) once we've reached triangulation
+    if (['TRIANGULATE', 'MST', 'CORRIDORS'].includes(currentStep)) {
+        ctx.strokeStyle = 'rgba(74, 144, 226, 0.15)';
         ctx.lineWidth = 1;
         triEdges.forEach(e => {
-            ctx.beginPath();
-            ctx.moveTo(e.r1.centerX, e.r1.centerY);
-            ctx.lineTo(e.r1.centerX + (e.r2.centerX - e.r1.centerX) * e.progress, e.r1.centerY + (e.r2.centerY - e.r1.centerY) * e.progress);
-            ctx.stroke();
+            if (e.progress > 0) {
+                ctx.beginPath();
+                ctx.moveTo(e.r1.centerX, e.r1.centerY);
+                ctx.lineTo(e.r1.centerX + (e.r2.centerX - e.r1.centerX) * e.progress, e.r1.centerY + (e.r2.centerY - e.r1.centerY) * e.progress);
+                ctx.stroke();
+            }
         });
     }
 
-    if (currentStep === 'MST' || currentStep === 'CORRIDORS') {
+    // 2. Draw MST connections (Solid blue)
+    if (['MST', 'CORRIDORS'].includes(currentStep)) {
         ctx.strokeStyle = '#4a90e2';
         ctx.lineWidth = 2;
         mstEdges.forEach(e => {
-            ctx.beginPath();
-            ctx.moveTo(e.r1.centerX, e.r1.centerY);
-            ctx.lineTo(e.r1.centerX + (e.r2.centerX - e.r1.centerX) * e.progress, e.r1.centerY + (e.r2.centerY - e.r1.centerY) * e.progress);
-            ctx.stroke();
+            if (e.progress > 0) {
+                ctx.beginPath();
+                ctx.moveTo(e.r1.centerX, e.r1.centerY);
+                ctx.lineTo(e.r1.centerX + (e.r2.centerX - e.r1.centerX) * e.progress, e.r1.centerY + (e.r2.centerY - e.r1.centerY) * e.progress);
+                ctx.stroke();
+            }
         });
     }
 
+    // 3. Draw Corridors (Thick white L-shapes)
     if (currentStep === 'CORRIDORS') {
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3;
         mstEdges.forEach(e => {
             ctx.beginPath();
             ctx.moveTo(e.r1.centerX, e.r1.centerY);
@@ -349,6 +336,7 @@ function draw() {
         });
     }
 
+    // 4. Draw Rooms on top
     rooms.forEach(r => r.draw(ctx));
 
     physicsLoop();
@@ -356,20 +344,14 @@ function draw() {
 }
 
 nextBtn.addEventListener('click', () => {
-    if (currentStep === 'SPAWN') {
-        startSeparation();
-    } else if (currentStep === 'SEPARATE') {
+    if (currentStep === 'SPAWN') startSeparation();
+    else if (currentStep === 'SEPARATE') {
         if (separating) fastForwardPhysics();
         else selectMain();
-    } else if (currentStep === 'SELECT') {
-        triangulate();
-    } else if (currentStep === 'TRIANGULATE') {
-        calculateMST();
-    } else if (currentStep === 'MST') {
-        makeCorridors();
-    } else if (currentStep === 'CORRIDORS') {
-        init();
-    }
+    } else if (currentStep === 'SELECT') triangulate();
+    else if (currentStep === 'TRIANGULATE') calculateMST();
+    else if (currentStep === 'MST') makeCorridors();
+    else if (currentStep === 'CORRIDORS') init();
     updateUI();
 });
 
