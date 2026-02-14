@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Walk - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            image-rendering: pixelated;
+            max-width: 100%;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Random Walk (Drunkard's Walk)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>The Drunkard's Walk algorithm starts at a random point and "walks" in random cardinal directions (North, South, East, West). Each step carves out a floor tile. This process repeats until a certain percentage of the map is filled.</p>
+            <p>It's great for organic, winding cave systems.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="generateBtn" class="button">Generate New</button>
+                <span>Floor Fill: <span id="fillCount">0</span>%</span>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+// Simple move logic
+const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+const dir = directions[Math.floor(Math.random() * 4)];
+x += dir[0];
+y += dir[1];
+grid[x][y] = 1; // Mark as floor
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
