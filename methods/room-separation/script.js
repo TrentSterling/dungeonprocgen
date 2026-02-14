@@ -118,210 +118,106 @@ function startSeparation() {
 function physicsLoop() {
     if (!separating) return;
 
-    let overlapping = false;
-    rooms.forEach(r1 => {
-        r1.vx = 0;
-        r1.vy = 0;
-        rooms.forEach(r2 => {
-            if (r1 === r2) return;
-            if (r1.intersects(r2)) {
-                overlapping = true;
-                let dx = r1.centerX - r2.centerX;
-                let dy = r1.centerY - r2.centerY;
-                if (dx === 0 && dy === 0) {
-                    dx = Math.random() - 0.5;
-                    dy = Math.random() - 0.5;
+    // Run multiple iterations per frame to speed up settling naturally
+    for (let i = 0; i < 2; i++) {
+        let overlapping = false;
+        rooms.forEach(r1 => {
+            r1.vx = 0;
+            r1.vy = 0;
+            rooms.forEach(r2 => {
+                if (r1 === r2) return;
+                if (r1.intersects(r2)) {
+                    overlapping = true;
+                    let dx = r1.centerX - r2.centerX;
+                    let dy = r1.centerY - r2.centerY;
+                    if (dx === 0 && dy === 0) {
+                        dx = Math.random() - 0.5;
+                        dy = Math.random() - 0.5;
+                    }
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const force = 1.5;
+                    r1.vx += (dx / dist) * force;
+                    r1.vy += (dy / dist) * force;
                 }
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                // Stronger push
-                const force = 1.5;
-                r1.vx += (dx / dist) * force;
-                r1.vy += (dy / dist) * force;
-            }
-        });
-    });
-
-    rooms.forEach(r => {
-        r.x += r.vx;
-        r.y += r.vy;
-    });
-
-    if (!overlapping) {
-        separating = false;
-        // Snap to grid after physics settles
-        rooms.forEach(r => {
-            r.x = Math.round(r.x);
-            r.y = Math.round(r.y);
-        });
-        currentStep = 'SELECT'; // Ready for next step
-        updateUI();
-    }
-}
-
-function selectMain() {
-    currentStep = 'SELECT';
-    updateUI();
-    const avgW = rooms.reduce((sum, r) => sum + r.w, 0) / rooms.length;
-    const avgH = rooms.reduce((sum, r) => sum + r.h, 0) / rooms.length;
-    
-    rooms.forEach((r, i) => {
-        if (r.w > avgW * MAIN_ROOM_THRESHOLD && r.h > avgH * MAIN_ROOM_THRESHOLD) {
-            r.isMain = true;
-            // Animate highlight
-            setTimeout(() => {
-                anim.add(500, (val) => {
-                    // Interpolate color from #333 to #eee
-                    // Simplified: just swapping for now, but could be fancier
-                }, Easing.easeOutQuad, () => {
-                   r.color = '#eee';
-                   r.borderColor = '#4a90e2';
-                });
-            }, i * 50);
-        } else {
-            // Fade out non-main rooms slightly
-            anim.add(500, (val) => {
-                // opacity handled in draw
             });
-        }
-    });
-}
-
-function connectRooms() {
-    currentStep = 'CONNECT';
-    updateUI();
-    
-    const mainRooms = rooms.filter(r => r.isMain);
-    if (mainRooms.length < 2) return;
-
-    // Calculate all edges
-    allEdges = [];
-    for (let i = 0; i < mainRooms.length; i++) {
-        for (let j = i + 1; j < mainRooms.length; j++) {
-            const r1 = mainRooms[i];
-            const r2 = mainRooms[j];
-            const dist = Math.sqrt(Math.pow(r1.centerX - r2.centerX, 2) + Math.pow(r1.centerY - r2.centerY, 2));
-            allEdges.push({ u: i, v: j, weight: dist, r1, r2 });
-        }
-    }
-
-    // Prim's
-    const visited = new Set([0]);
-    const edges = [...allEdges];
-    mstEdges = [];
-
-    while (visited.size < mainRooms.length) {
-        let minEdge = null;
-        let minWeight = Infinity;
-        
-        edges.forEach(edge => {
-            const hasU = visited.has(edge.u);
-            const hasV = visited.has(edge.v);
-            if ((hasU && !hasV) || (!hasU && hasV)) {
-                if (edge.weight < minWeight) {
-                    minWeight = edge.weight;
-                    minEdge = edge;
-                }
-            }
         });
 
-        if (minEdge) {
-            mstEdges.push({ ...minEdge, progress: 0 });
-            visited.add(minEdge.u);
-            visited.add(minEdge.v);
-        } else break;
-    }
+        rooms.forEach(r => {
+            r.x += r.vx;
+            r.y += r.vy;
+        });
 
-    // Add loops
-    allEdges.forEach(edge => {
-        // Check if edge already exists in mstEdges (by reference to original objects)
-        const exists = mstEdges.some(e => e.r1 === edge.r1 && e.r2 === edge.r2);
-        if (!exists && Math.random() < 0.15) {
-            mstEdges.push({ ...edge, progress: 0 });
+        if (!overlapping) {
+            finishSeparation();
+            break;
         }
-    });
-
-    // Animate edges drawing one by one
-    mstEdges.forEach((edge, i) => {
-        setTimeout(() => {
-            anim.add(400, (val) => {
-                edge.progress = val;
-            }, Easing.easeInOutQuad);
-        }, i * 100);
-    });
+    }
 }
 
-function makeCorridors() {
-    currentStep = 'CORRIDORS';
-    updateUI();
-    // No specific animation for corridors yet, just draw them L-shaped
-}
-
-function draw() {
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    
-    // Grid background
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 1;
-    for(let i=0; i<WIDTH; i+=40) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, HEIGHT); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(WIDTH, i); ctx.stroke();
-    }
-
-    // Draw MST connections
-    if (currentStep === 'CONNECT' || currentStep === 'CORRIDORS') {
-        mstEdges.forEach(edge => {
-            if (edge.progress > 0) {
-                ctx.strokeStyle = '#4a90e2';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(edge.r1.centerX, edge.r1.centerY);
-                
-                // Lerp target
-                const tx = edge.r1.centerX + (edge.r2.centerX - edge.r1.centerX) * edge.progress;
-                const ty = edge.r1.centerY + (edge.r2.centerY - edge.r1.centerY) * edge.progress;
-                
-                ctx.lineTo(tx, ty);
-                ctx.stroke();
-            }
-        });
-    }
-
-    // Draw Corridors (L-shape)
-    if (currentStep === 'CORRIDORS') {
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        mstEdges.forEach(edge => {
-             // Simple L-shape: Horizontal then Vertical
-             const midX = edge.r2.centerX;
-             const midY = edge.r1.centerY;
-             
-             ctx.beginPath();
-             ctx.moveTo(edge.r1.centerX, edge.r1.centerY);
-             ctx.lineTo(midX, midY);
-             ctx.lineTo(edge.r2.centerX, edge.r2.centerY);
-             ctx.stroke();
-        });
-    }
-
-    // Draw Rooms
+function finishSeparation() {
+    separating = false;
     rooms.forEach(r => {
-        if (currentStep === 'SELECT' || currentStep === 'CONNECT' || currentStep === 'CORRIDORS') {
-            if (!r.isMain) ctx.globalAlpha = 0.2;
-        }
-        r.draw(ctx);
-        ctx.globalAlpha = 1.0;
+        r.x = Math.round(r.x);
+        r.y = Math.round(r.y);
     });
+    // Don't auto-advance currentStep, wait for Next button
+    updateUI();
+}
 
-    physicsLoop();
-    requestAnimationFrame(draw);
+function fastForwardPhysics() {
+    let overlapping = true;
+    let safeguard = 0;
+    while (overlapping && safeguard < 2000) {
+        overlapping = false;
+        rooms.forEach(r1 => {
+            r1.vx = 0;
+            r1.vy = 0;
+            rooms.forEach(r2 => {
+                if (r1 === r2) return;
+                if (r1.intersects(r2)) {
+                    overlapping = true;
+                    let dx = r1.centerX - r2.centerX;
+                    let dy = r1.centerY - r2.centerY;
+                    if (dx === 0 && dy === 0) {
+                        dx = Math.random() - 0.5;
+                        dy = Math.random() - 0.5;
+                    }
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const force = 1.5;
+                    r1.vx += (dx / dist) * force;
+                    r1.vy += (dy / dist) * force;
+                }
+            });
+        });
+        rooms.forEach(r => {
+            r.x += r.vx;
+            r.y += r.vy;
+        });
+        safeguard++;
+    }
+    finishSeparation();
 }
 
 nextBtn.addEventListener('click', () => {
-    if (currentStep === 'SPAWN') startSeparation();
-    else if (currentStep === 'SEPARATE' && !separating) selectMain(); // Only proceed if settled
-    else if (currentStep === 'SELECT') connectRooms();
-    else if (currentStep === 'CONNECT') makeCorridors();
-    else if (currentStep === 'CORRIDORS') init();
+    if (currentStep === 'SPAWN') {
+        startSeparation();
+    } else if (currentStep === 'SEPARATE') {
+        if (separating) {
+            fastForwardPhysics();
+        } else {
+            currentStep = 'SELECT';
+            selectMain();
+        }
+    } else if (currentStep === 'SELECT') {
+        currentStep = 'CONNECT';
+        connectRooms();
+    } else if (currentStep === 'CONNECT') {
+        currentStep = 'CORRIDORS';
+        makeCorridors();
+    } else if (currentStep === 'CORRIDORS') {
+        init();
+    }
+    updateUI();
 });
 
 resetBtn.addEventListener('click', init);
