@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Graph - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            background: #000;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Mission Graph (Grammars)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Instead of placing rooms randomly, we first design the <em>flow</em> of the level using a graph grammar. We start with a simple Start -> Goal connection and iteratively complicate it.</p>
+            <p><strong>Rules:</strong> Replace a connection with a "Lock & Key" puzzle, or insert a "Monster" encounter.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset (Start -> Goal)</button>
+                <button id="addLockBtn" class="button">Add Lock/Key</button>
+                <button id="addMonsterBtn" class="button">Add Monster</button>
+                <button id="addTreasureBtn" class="button">Add Side Treasure</button>
+            </div>
+            <canvas id="canvas" width="600" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+// Graph Grammar Rule: Lock & Key
+// Replaces:  [A] -> [B]
+// With:      [A] -> [Key] -> [Lock] -> [B]
+function addLockAndKey(edge) {
+    const keyNode = new Node("Key");
+    const lockNode = new Node("Lock");
+    graph.insert(edge, [keyNode, lockNode]);
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

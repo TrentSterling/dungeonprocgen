@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perlin Noise Caves - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            background: #000;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        input[type=range] {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Perlin Noise Caves</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Perlin Noise generates smooth, continuous random values. By setting a "threshold" (water level), we can decide which parts are walls and which are floors.</p>
+            <p><strong>Marching Squares:</strong> To make the walls smooth instead of blocky, we interpolate between the grid points to draw angled lines.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="flyBtn" class="button">Start Flying</button>
+                <label>Threshold: <input type="range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.45"></label>
+                <span id="thresholdVal">0.45</span>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+// Get noise value at (x, y)
+let val = noise.perlin2(x * scale, y * scale);
+
+// Check threshold
+if (val > threshold) {
+    drawWall(x, y);
+} else {
+    drawFloor(x, y);
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

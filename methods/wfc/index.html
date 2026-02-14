@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Function Collapse - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            background: #000;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Wave Function Collapse (WFC)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>WFC is a constraint-based algorithm. Imagine every cell starts in a "superposition" of all possible tiles. We observe (collapse) one cell, then propagate constraints to its neighbors, eliminating impossible options.</p>
+            <p><strong>Rules:</strong> Like Sudoku, but with adjacency rules (e.g., "Water" can touch "Sand" but not "Grass").</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset</button>
+                <button id="stepBtn" class="button">Step</button>
+                <button id="autoBtn" class="button">Auto Run</button>
+            </div>
+            <p id="status">Status: Ready</p>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+        
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+function propagate(cell) {
+    stack.push(cell);
+    while(stack.length > 0) {
+        let current = stack.pop();
+        current.neighbors.forEach(neighbor => {
+            // Remove options incompatible with current's possible options
+            if(constrain(neighbor, current)) {
+                stack.push(neighbor);
+            }
+        });
+    }
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
