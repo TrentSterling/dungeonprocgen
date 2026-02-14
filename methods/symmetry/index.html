@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry & Mirroring - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            cursor: crosshair;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Symmetry & Mirroring</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>For competitive maps (like MOBAs or FPS arenas), fairness is key. We generate one quadrant and mirror it across the X and Y axes.</p>
+            <p><strong>Try it:</strong> Draw in the top-left quadrant!</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Clear</button>
+                <label><input type="checkbox" id="xMirror" checked> X-Axis</label>
+                <label><input type="checkbox" id="yMirror" checked> Y-Axis</label>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

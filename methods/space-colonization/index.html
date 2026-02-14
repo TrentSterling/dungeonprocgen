@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Colonization - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            background: #000;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Space Colonization (Branching)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Simulating growth (like tree roots or lightning) by placing "attractors" in space. Nodes grow toward nearby attractors, deleting them once reached.</p>
+            <p><strong>Game Dev Use:</strong> Realistic trees, vascular systems, lightning, or sprawling cave networks.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset</button>
+                <button id="growBtn" class="button">Grow Step</button>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

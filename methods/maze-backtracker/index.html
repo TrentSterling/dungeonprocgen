@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive Backtracker Maze - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            image-rendering: pixelated;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Recursive Backtracker (Perfect Maze)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Imagine a miner digging tunnels. They choose a random unvisited neighbor, carve a path, and move there. If they hit a dead end (all neighbors visited), they backtrack along their path until they find a new opening.</p>
+            <p><strong>Result:</strong> A "perfect" maze with no loops and every cell reachable.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">New Maze</button>
+                <button id="speedBtn" class="button">Speed: Normal</button>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+function step(current) {
+    current.visited = true;
+    let next = getRandomUnvisitedNeighbor(current);
+    
+    if (next) {
+        stack.push(current);
+        removeWalls(current, next);
+        step(next);
+    } else if (stack.length > 0) {
+        step(stack.pop());
+    }
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

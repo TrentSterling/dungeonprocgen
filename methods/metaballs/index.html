@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metaballs (Blobs) - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            cursor: move;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Metaballs (Organic Caves)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Metaballs define a "field" where each ball adds to the value of nearby pixels. If the total value exceeds a threshold, we draw a floor. This creates smooth, organic merging shapes.</p>
+            <p><strong>Game Dev Use:</strong> Creating natural cave systems, slime monsters, or fluid simulations.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset</button>
+                <label>Threshold: <input type="range" id="threshold" min="20" max="200" value="60"></label>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poisson Disk Sampling - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            background: #000;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Poisson Disk Sampling</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Generates points that are randomly placed but never closer to each other than a minimum distance <em>r</em>. This creates a pleasing, natural "blue noise" distribution unlike pure randomness (white noise).</p>
+            <p><strong>Game Dev Use:</strong> Placing trees, enemies, or loot chests without clumping.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Generate New</button>
+                <label>Min Dist (r): <input type="range" id="radiusSlider" min="10" max="50" value="30"></label>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

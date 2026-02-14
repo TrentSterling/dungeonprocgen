@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Diagrams - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            max-width: 100%;
+            cursor: crosshair;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Voronoi Diagrams (Biomes)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>A Voronoi Diagram partitions a plane into regions based on distance to points (sites). For any pixel, its region is determined by the closest site.</p>
+            <p><strong>Game Dev Use:</strong> Generating biomes (forest, desert, snow), political maps, or organic cell structures.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Reset Points</button>
+                <button id="relaxBtn" class="button">Relax (Lloyd's Algorithm)</button>
+                <span>Click canvas to add points!</span>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic (Pixel Shader Style)</h2>
+            <pre><code>
+// For every pixel (x,y)
+let closestDist = Infinity;
+let closestSite = null;
+
+sites.forEach(site => {
+    let d = dist(x, y, site.x, site.y);
+    if (d < closestDist) {
+        closestDist = d;
+        closestSite = site;
+    }
+});
+
+pixelColor = closestSite.color;
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="../../scripts/utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
