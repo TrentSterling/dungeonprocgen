@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSP Dungeon - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            image-rendering: pixelated;
+            max-width: 100%;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Binary Space Partitioning (BSP)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>BSP works by recursively splitting a large rectangle into smaller ones. Once the areas are small enough, we place a room inside each one and connect them with corridors.</p>
+            <p>This method produces very structured, "man-made" looking dungeons.</p>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="generateBtn" class="button">Generate BSP</button>
+            </div>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Core Logic</h2>
+            <pre><code>
+function split(rect) {
+    if(rect.w > MIN_SIZE || rect.h > MIN_SIZE) {
+        // Choose horizontal or vertical split
+        // Add children to leaf node
+    }
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
