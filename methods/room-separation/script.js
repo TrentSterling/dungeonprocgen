@@ -297,8 +297,8 @@ function draw() {
 
     // 1. Draw ALL possible connections (faintly) once we've reached triangulation
     if (['TRIANGULATE', 'MST', 'CORRIDORS'].includes(currentStep)) {
-        ctx.strokeStyle = 'rgba(74, 144, 226, 0.15)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(74, 144, 226, 0.25)';
+        ctx.lineWidth = 2;
         triEdges.forEach(e => {
             if (e.progress > 0) {
                 ctx.beginPath();
@@ -312,7 +312,7 @@ function draw() {
     // 2. Draw MST connections (Solid blue)
     if (['MST', 'CORRIDORS'].includes(currentStep)) {
         ctx.strokeStyle = '#4a90e2';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 4;
         mstEdges.forEach(e => {
             if (e.progress > 0) {
                 ctx.beginPath();
@@ -326,7 +326,7 @@ function draw() {
     // 3. Draw Corridors (Thick white L-shapes)
     if (currentStep === 'CORRIDORS') {
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 6;
         mstEdges.forEach(e => {
             ctx.beginPath();
             ctx.moveTo(e.r1.centerX, e.r1.centerY);
