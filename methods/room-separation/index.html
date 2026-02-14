@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Separation - Dungeon ProcGen</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <style>
+        canvas {
+            border: 1px solid #444;
+            background: #000;
+            max-width: 100%;
+        }
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .step-desc {
+            font-style: italic;
+            color: #aaa;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html" style="color: white;">← Back to Hub</a>
+        <h1>Room Separation (TinyKeep Style)</h1>
+    </header>
+
+    <main>
+        <section class="tutorial">
+            <h2>The Concept</h2>
+            <p>Popularized by <em>TinyKeep</em>, this method uses a pseudo-physics approach to generate dungeons that feel both structured and organic.</p>
+            <ol>
+                <li><strong>Spawn:</strong> Scatter rooms of various sizes within a circle.</li>
+                <li><strong>Separate:</strong> Use a separation steering behavior (or simple physics) to push overlapping rooms apart.</li>
+                <li><strong>Select:</strong> Choose "Main Rooms" (larger ones) to be the core of the dungeon.</li>
+                <li><strong>Connect:</strong> Use Delaunay Triangulation and a Minimum Spanning Tree (MST) to find the best paths between rooms.</li>
+                <li><strong>Corridors:</strong> Create L-shaped corridors between the connected rooms.</li>
+            </ol>
+        </section>
+
+        <section class="visualizer">
+            <div class="controls">
+                <button id="resetBtn" class="button">Restart</button>
+                <button id="nextBtn" class="button">Next Step</button>
+                <span id="stepLabel">Step: Initial Spawning</span>
+            </div>
+            <p id="stepDesc" class="step-desc">Rooms are randomly placed within a circle.</p>
+            <canvas id="canvas" width="600" height="600"></canvas>
+        </section>
+
+        <section class="code-snippet">
+            <h2>Separation Logic</h2>
+            <pre><code>
+// Simple separation vector
+rooms.forEach(other => {
+    if (this === other) return;
+    let dx = this.x - other.x;
+    let dy = this.y - other.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < minDistance) {
+        forceX += dx / dist;
+        forceY += dy / dist;
+    }
+});
+            </code></pre>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
